@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<phpstan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://phpstan.org/config.schema.json">
+    <parameters>
+        <parameter name="level" value="5" />
+        <parameter name="paths">
+            <parameter>src</parameter>
+        </parameter>
+    </parameters>
+</phpstan>

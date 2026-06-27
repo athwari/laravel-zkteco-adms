@@ -1,0 +1,19 @@
+name: Coverage
+
+on:
+  workflow_dispatch:
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: xdebug
+
+      - run: composer install --prefer-dist --no-interaction
+      - run: vendor/bin/pest --coverage

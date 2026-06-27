@@ -1,0 +1,87 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, master]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4']
+        laravel: ['8.*', '9.*', '10.*', '11.*', '12.*']
+        stability: [prefer-lowest, prefer-stable]
+
+        exclude:
+          # Laravel 8 supports PHP 7.3 - 8.1
+          - laravel: '8.*'
+            php: '8.2'
+          - laravel: '8.*'
+            php: '8.3'
+          - laravel: '8.*'
+            php: '8.4'
+
+          # Laravel 9 supports PHP 8.0 - 8.2
+          - laravel: '9.*'
+            php: '8.3'
+          - laravel: '9.*'
+            php: '8.4'
+
+          # Laravel 10 supports PHP 8.1+
+          - laravel: '10.*'
+            php: '8.0'
+
+          # Laravel 11 and 12 support PHP 8.2+
+          - laravel: '11.*'
+            php: '8.0'
+          - laravel: '11.*'
+            php: '8.1'
+          - laravel: '12.*'
+            php: '8.0'
+          - laravel: '12.*'
+            php: '8.1'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
+
+      - name: Setup problem matchers
+        run: |
+          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Remove lock file
+        run: rm -f composer.lock
+
+      - name: Install dependencies
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" --dev --no-update --no-interaction
+          composer update \
+            --${{ matrix.stability }} \
+            --prefer-dist \
+            --no-interaction
+
+      - name: List installed dependencies
+        run: composer show -D
+
+      - name: Execute tests
+        run: vendor/bin/pest

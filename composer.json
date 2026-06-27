@@ -1,0 +1,80 @@
+{
+    "name": "athwari/laravel-zkteco-adms",
+    "description": "Laravel package implementing the ZKTeco ADMS protocol for biometric attendance devices.",
+    "keywords": [
+        "athwari",
+        "laravel",
+        "zkteco",
+        "adms",
+        "biometric",
+        "attendance",
+        "fingerprint",
+        "iclock"
+    ],
+    "license": "MIT",
+    "type": "library",
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/database": "^10.0|^11.0|^12.0",
+        "illuminate/http": "^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.1",
+        "orchestra/testbench": "^8.0|^9.17|^10.11",
+        "pestphp/pest": "^1.0|^2.0|^3.0",
+        "pestphp/pest-plugin-laravel": "^1.0|^2.0|^3.0",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^1.10|^2.0",
+        "phpunit/phpunit": "^9.0|^10.0 <10.5.60|^11.0",
+        "rector/rector": "^1.0|^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Athwari\\LaravelZktecoAdms\\": "src/",
+            "Athwari\\LaravelZktecoAdms\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Athwari\\LaravelZktecoAdms\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "1.x-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Athwari\\LaravelZktecoAdms\\LaravelZktecoAdmsServiceProvider"
+            ],
+            "aliases": {
+                "ZktecoAdms": "Athwari\\LaravelZktecoAdms\\Facades\\ZktecoAdms"
+            }
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "post-autoload-dump": "@composer run prepare",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "analyse": "vendor/bin/phpstan analyse --memory-limit=512M",
+        "format": "vendor/bin/pint",
+        "refactor": "vendor/bin/rector"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "preferred-install": "dist",
+        "policy": {
+            "advisories": {
+                "block": false
+            }
+        },
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    }
+}

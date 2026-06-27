@@ -1,0 +1,37 @@
+name: Static Analysis
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - '**.php'
+      - 'phpstan.neon.dist'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - '**.php'
+      - 'phpstan.neon.dist'
+
+jobs:
+  phpstan:
+    runs-on: ubuntu-latest
+    name: PHPStan
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Copy PHPStan config
+        run: cp phpstan.neon.dist phpstan.neon
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --no-progress --error-format=github

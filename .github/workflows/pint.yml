@@ -1,0 +1,34 @@
+name: Code Style
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - '**.php'
+      - 'pint.json'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - '**.php'
+      - 'pint.json'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Laravel Pint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run Pint
+        run: vendor/bin/pint --test
