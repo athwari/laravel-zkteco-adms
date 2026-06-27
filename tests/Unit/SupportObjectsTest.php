@@ -20,6 +20,7 @@ use Athwari\LaravelZktecoAdms\Models\ZktecoDeviceEvent;
 use Athwari\LaravelZktecoAdms\Models\ZktecoUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 test('dto helpers expose array and enum metadata', function () {
@@ -136,7 +137,7 @@ test('device and user models expose their relationships and helper methods', fun
         $table->timestamps();
     });
 
-    $appUserId = \Illuminate\Support\Facades\DB::table('users')->insertGetId(['name' => 'Host User', 'created_at' => now(), 'updated_at' => now()]);
+    $appUserId = DB::table('users')->insertGetId(['name' => 'Host User', 'created_at' => now(), 'updated_at' => now()]);
 
     $device = ZktecoDevice::query()->create([
         'serial_number' => 'REL001',
