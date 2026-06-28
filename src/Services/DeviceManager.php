@@ -43,6 +43,11 @@ class DeviceManager
                 throw new DeviceLimitReachedException($maxDevices);
             }
 
+            $deviceAttributes = array_filter($attributes);
+            if (! isset($deviceAttributes['timezone']) || $deviceAttributes['timezone'] === '') {
+                $deviceAttributes['timezone'] = config('zkteco-adms.default_timezone', 'UTC');
+            }
+
             $device = $modelClass::create(array_merge([
                 'serial_number' => $serialNumber,
                 'name' => "Device {$serialNumber}",
@@ -50,7 +55,7 @@ class DeviceManager
                 'status' => DeviceStatus::Online,
                 'last_activity_at' => now(),
                 'options' => [],
-            ], array_filter($attributes)));
+            ], $deviceAttributes));
 
             if (config('zkteco-adms.events.dispatch_device_event', true)) {
                 ZktecoDeviceEvent::record(

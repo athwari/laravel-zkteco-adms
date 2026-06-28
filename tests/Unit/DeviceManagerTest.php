@@ -82,6 +82,20 @@ test('set device timezone', function () {
     expect(deviceManager()->getDeviceTimezone('TEST001'))->toBe('Europe/Istanbul');
 });
 
+test('register device uses default timezone when missing', function () {
+    config()->set('zkteco-adms.default_timezone', 'Asia/Riyadh');
+
+    $device = deviceManager()->registerDevice('TZDEFAULT001');
+
+    expect($device->timezone)->toBe('Asia/Riyadh');
+});
+
+test('register device keeps provided timezone attribute', function () {
+    $device = deviceManager()->registerDevice('TZCUSTOM001', null, ['timezone' => 'Europe/Istanbul']);
+
+    expect($device->timezone)->toBe('Europe/Istanbul');
+});
+
 test('set timezone for unknown device throws', function () {
     deviceManager()->setDeviceTimezone('UNKNOWN', 'UTC');
 })->throws(DeviceNotFoundException::class);
