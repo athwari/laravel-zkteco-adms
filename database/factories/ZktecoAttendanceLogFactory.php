@@ -20,10 +20,16 @@ class ZktecoAttendanceLogFactory extends Factory
      */
     public function definition(): array
     {
+        $recordedAt = $this->faker->dateTimeBetween('-30 days');
+        $occurredAt = (clone $recordedAt)->setTimezone(new \DateTimeZone(
+            config('zkteco-adms.storage_timezone', 'UTC')
+        ));
+
         return [
             'device_id' => ZktecoDevice::factory(),
             'pin' => (string) $this->faker->numberBetween(1, 9999),
-            'recorded_at' => $this->faker->dateTimeBetween('-30 days'),
+            'recorded_at' => $recordedAt,
+            'occurred_at' => $occurredAt,
             'status' => $this->faker->randomElement(AttendanceStatus::cases()),
             'verify_mode' => $this->faker->randomElement([VerifyMode::Fingerprint, VerifyMode::Face, VerifyMode::Card]),
             'work_code' => '',

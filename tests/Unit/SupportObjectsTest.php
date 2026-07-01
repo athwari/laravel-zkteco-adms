@@ -93,6 +93,28 @@ test('enum helpers expose colors, icons, and unknown fallbacks', function () {
         ->and(VerifyMode::nameFor(99))->toBe('Unknown (99)');
 });
 
+test('all enum cases expose their presentation metadata', function () {
+    foreach (AttendanceStatus::cases() as $status) {
+        expect($status->getLabel())->toBeString()
+            ->and($status->getColor())->toBeString()
+            ->and($status->getIcon())->toBeString()
+            ->and(AttendanceStatus::nameFor($status->value))->toBe($status->getLabel());
+    }
+
+    foreach (DeviceEventType::cases() as $eventType) {
+        expect($eventType->getLabel())->toBeString()
+            ->and($eventType->getColor())->toBeString()
+            ->and($eventType->getIcon())->toBeString();
+    }
+
+    foreach (VerifyMode::cases() as $mode) {
+        expect($mode->getLabel())->toBeString()
+            ->and($mode->getColor())->toBeString()
+            ->and($mode->getIcon())->toBeString()
+            ->and(VerifyMode::nameFor($mode->value))->toBe($mode->getLabel());
+    }
+});
+
 test('device command and event models apply lifecycle updates and relations', function () {
     $device = ZktecoDevice::query()->create([
         'serial_number' => 'MODEL001',
@@ -124,6 +146,7 @@ test('device command and event models apply lifecycle updates and relations', fu
     $event = ZktecoDeviceEvent::record($device->id, DeviceEventType::Connected, ['reason' => 'heartbeat'], '127.0.0.1');
 
     expect($event->device->is($device))->toBeTrue()
+        ->and($command->device->is($device))->toBeTrue()
         ->and($event->payload)->toBe(['reason' => 'heartbeat'])
         ->and($event->ip_address)->toBe('127.0.0.1');
 });
@@ -153,10 +176,13 @@ test('device and user models expose their relationships and helper methods', fun
         'is_enabled' => true,
     ]);
 
+    $occurredAt = now();
+
     ZktecoAttendanceLog::query()->create([
         'device_id' => $device->id,
         'pin' => 'PIN001',
         'recorded_at' => now(),
+        'occurred_at' => $occurredAt,
         'status' => AttendanceStatus::CheckIn,
         'verify_mode' => VerifyMode::Fingerprint,
         'work_code' => '',
@@ -166,14 +192,39 @@ test('device and user models expose their relationships and helper methods', fun
 
     expect($device->attendanceLogs()->count())->toBe(1)
         ->and($device->zktecoUsers()->count())->toBe(1)
+        ->and($device->deviceEvents()->count())->toBe(0)
         ->and($device->getEffectiveTimezone())->toBe('UTC')
         ->and($device->isOnline())->toBeTrue()
         ->and($zktecoUser->attendanceLogs()->count())->toBe(1)
         ->and($attendanceLog->getTable())->toBe('zkteco_attendance_logs')
+        ->and($attendanceLog->occurred_at->getTimestamp())->toBe($occurredAt->getTimestamp())
         ->and($attendanceLog->device->is($device))->toBeTrue()
         ->and($attendanceLog->zktecoUser->is($zktecoUser))->toBeTrue()
         ->and($zktecoUser->appUser)->not->toBeNull()
         ->and($zktecoUser->appUser->getKey())->toBe($appUserId);
+});
+
+test('device without activity is offline', function () {
+    $device = ZktecoDevice::query()->create([
+        'serial_number' => 'OFFLINE001',
+        'last_activity_at' => null,
+    ]);
+
+    expect($device->isOnline())->toBeFalse();
+});
+
+test('model factories resolve and create their models', function () {
+    expect(ZktecoDevice::factory()->create())->toBeInstanceOf(ZktecoDevice::class)
+        ->and(ZktecoUser::factory()->create())->toBeInstanceOf(ZktecoUser::class)
+        ->and(ZktecoDeviceCommand::factory()->create())->toBeInstanceOf(ZktecoDeviceCommand::class)
+        ->and(ZktecoDeviceEvent::factory()->create())->toBeInstanceOf(ZktecoDeviceEvent::class);
+});
+
+test('attendance log factory populates normalized timestamp', function () {
+    $attendanceLog = ZktecoAttendanceLog::factory()->create();
+
+    expect($attendanceLog->recorded_at)->not->toBeNull()
+        ->and($attendanceLog->occurred_at)->not->toBeNull();
 });
 
 test('simple events keep their constructor payloads', function () {

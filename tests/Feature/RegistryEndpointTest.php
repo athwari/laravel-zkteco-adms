@@ -14,6 +14,11 @@ test('registry get', function () {
         ->assertSee('OK');
 });
 
+test('registry requires serial number', function () {
+    /** @var TestCase $this */
+    $this->get('/iclock/registry')->assertStatus(400);
+});
+
 test('registry post with body', function () {
     /** @var TestCase $this */
     Event::fake([DeviceRegistered::class]);

@@ -49,6 +49,7 @@ abstract class TestCase extends BaseTestCase
         $app['config']->set('zkteco-adms.max_commands_per_device', 50);
         $app['config']->set('zkteco-adms.online_threshold', 120);
         $app['config']->set('zkteco-adms.default_timezone', 'UTC');
+        $app['config']->set('zkteco-adms.storage_timezone', 'UTC');
         $app['config']->set('zkteco-adms.enable_inspect', false);
         $app['config']->set('zkteco-adms.events.dispatch_device_event', false);
         $app['config']->set('zkteco-adms.events.dispatch_attendance_received', true);
@@ -61,7 +62,20 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+
+        $migrations = [
+            'create_zkteco_devices_table.php.stub',
+            'create_zkteco_users_table.php.stub',
+            'create_zkteco_attendance_logs_table.php.stub',
+            'create_zkteco_device_commands_table.php.stub',
+            'create_zkteco_device_events_table.php.stub',
+            'add_occurred_at_to_zkteco_attendance_logs_table.php.stub',
+        ];
+
+        foreach ($migrations as $migration) {
+            $instance = require __DIR__.'/../database/migrations/'.$migration;
+            $instance->up();
+        }
     }
 
     /**

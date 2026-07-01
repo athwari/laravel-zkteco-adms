@@ -37,7 +37,12 @@ Publish the configuration file:
 php artisan vendor:publish --tag="zkteco-adms-config"
 ```
 
-Migrations are loaded automatically by the service provider.
+Publish and run the package migrations:
+
+```bash
+php artisan vendor:publish --tag="zkteco-adms-migrations"
+php artisan migrate
+```
 
 Main configuration areas in config/zkteco-adms.php:
 
@@ -48,6 +53,16 @@ Main configuration areas in config/zkteco-adms.php:
 - models: model class overrides for device, user, attendance log, command, and event
 - events: per-event dispatch toggles
 - enable_inspect: enables the inspect endpoint
+- default_timezone: fallback timezone used to interpret device-local attendance times
+- storage_timezone: timezone used for normalized `occurred_at` values (defaults to UTC)
+
+Set the normalized attendance storage timezone with:
+
+```dotenv
+ZKTECO_ADMS_STORAGE_TIMEZONE=UTC
+```
+
+Attendance logs retain the device-local time in `recorded_at` for backward compatibility. The same instant is also stored in `occurred_at`, converted to `storage_timezone`; use this field when comparing or reporting attendance across devices in different timezones.
 
 ## Usage
 

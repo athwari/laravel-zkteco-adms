@@ -48,6 +48,11 @@ test('devicecmd rejects get', function () {
     $this->get('/iclock/devicecmd?SN=TEST001')->assertStatus(405);
 });
 
+test('devicecmd requires serial number', function () {
+    /** @var TestCase $this */
+    $this->post('/iclock/devicecmd')->assertStatus(400);
+});
+
 test('devicecmd enriches result with queued command', function () {
     Event::fake([CommandResultReceived::class]);
 

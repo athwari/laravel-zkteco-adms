@@ -44,7 +44,7 @@ class DeviceManager
             }
 
             $deviceAttributes = array_filter($attributes);
-            if (! isset($deviceAttributes['timezone']) || $deviceAttributes['timezone'] === '') {
+            if (! isset($deviceAttributes['timezone'])) {
                 $deviceAttributes['timezone'] = config('zkteco-adms.default_timezone', 'UTC');
             }
 

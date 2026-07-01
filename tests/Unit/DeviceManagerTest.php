@@ -90,6 +90,14 @@ test('register device uses default timezone when missing', function () {
     expect($device->timezone)->toBe('Asia/Riyadh');
 });
 
+test('register device uses default timezone when provided timezone is empty', function () {
+    config()->set('zkteco-adms.default_timezone', 'Asia/Riyadh');
+
+    $device = deviceManager()->registerDevice('TZEMPTY001', null, ['timezone' => '']);
+
+    expect($device->timezone)->toBe('Asia/Riyadh');
+});
+
 test('register device keeps provided timezone attribute', function () {
     $device = deviceManager()->registerDevice('TZCUSTOM001', null, ['timezone' => 'Europe/Istanbul']);
 

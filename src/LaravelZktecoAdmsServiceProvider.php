@@ -28,7 +28,24 @@ class LaravelZktecoAdmsServiceProvider extends ServiceProvider
                 __DIR__.'/../config/zkteco-adms.php' => config_path('zkteco-adms.php'),
             ], 'zkteco-adms-config');
 
-            $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+            $timestamp = time();
+            $migrations = [
+                'create_zkteco_devices_table.php.stub',
+                'create_zkteco_users_table.php.stub',
+                'create_zkteco_attendance_logs_table.php.stub',
+                'create_zkteco_device_commands_table.php.stub',
+                'create_zkteco_device_events_table.php.stub',
+                'add_occurred_at_to_zkteco_attendance_logs_table.php.stub',
+            ];
+            $migrationPaths = [];
+
+            foreach ($migrations as $offset => $migration) {
+                $migrationPaths[__DIR__.'/../database/migrations/'.$migration] = database_path(
+                    'migrations/'.date('Y_m_d_His', $timestamp + $offset).'_'.str_replace('.stub', '', $migration)
+                );
+            }
+
+            $this->publishes($migrationPaths, 'zkteco-adms-migrations');
 
             $this->commands([
                 EvictStaleDevicesCommand::class,

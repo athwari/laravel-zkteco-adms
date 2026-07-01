@@ -65,6 +65,11 @@ test('drain commands marks as sent', function () {
     expect($drained)->toHaveCount(0);
 });
 
+test('unknown device has no commands', function () {
+    expect(commandManager()->drainCommands('UNKNOWN'))->toBe([])
+        ->and(commandManager()->pendingCount('UNKNOWN'))->toBe(0);
+});
+
 test('confirm command', function () {
     commandDeviceManager()->registerDevice('TEST001');
     $id = commandManager()->queueCommand('TEST001', 'INFO');
@@ -100,6 +105,18 @@ test('queue command records a device event when enabled', function () {
     expect($id)->toBeGreaterThan(0)
         ->and(ZktecoDeviceEvent::query()->count())->toBeGreaterThanOrEqual(1)
         ->and(ZktecoDeviceEvent::query()->latest('created_at')->first()?->event_type->value)->toBe('command_sent');
+});
+
+test('confirm command records a device event when enabled', function () {
+    config()->set('zkteco-adms.events.dispatch_device_event', true);
+    commandDeviceManager()->registerDevice('TEST001');
+    $id = commandManager()->queueCommand('TEST001', 'INFO');
+
+    commandManager()->confirmCommand($id, 0);
+
+    expect(ZktecoDeviceEvent::query()
+        ->where('event_type', 'command_acknowledged')
+        ->exists())->toBeTrue();
 });
 
 test('convenience commands', function () {

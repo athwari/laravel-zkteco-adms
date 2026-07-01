@@ -31,6 +31,7 @@ class ZktecoAttendanceLog extends Model
         'status' => AttendanceStatus::class,
         'verify_mode' => VerifyMode::class,
         'recorded_at' => 'datetime',
+        'occurred_at' => 'datetime',
         'raw_data' => 'array',
     ];
 

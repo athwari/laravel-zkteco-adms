@@ -19,6 +19,9 @@ use Athwari\LaravelZktecoAdms\Models\ZktecoUser;
 use Athwari\LaravelZktecoAdms\Services\AttendanceParser;
 use Athwari\LaravelZktecoAdms\Services\CommandManager;
 use Athwari\LaravelZktecoAdms\Services\DeviceManager;
+use DateTimeImmutable;
+use DateTimeZone;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
@@ -250,12 +253,15 @@ class AdmsController extends Controller
         $device = $this->deviceManager->getDevice($serialNumber);
 
         $attendanceModel = config('zkteco-adms.models.attendance_log', ZktecoAttendanceLog::class);
+        $storageTimezone = $this->storageTimezone($serialNumber);
 
         foreach ($records as $record) {
             $attendanceModel::create([
                 'device_id' => $device?->id,
                 'pin' => $record->pin,
                 'recorded_at' => $record->timestamp,
+                'occurred_at' => DateTimeImmutable::createFromInterface($record->timestamp)
+                    ->setTimezone($storageTimezone),
                 'status' => $record->status,
                 'verify_mode' => $record->verifyMode,
                 'work_code' => $record->workCode,
@@ -277,6 +283,26 @@ class AdmsController extends Controller
         }
 
         return response('OK: '.count($records), 200);
+    }
+
+    /**
+     * Resolve the timezone used to normalize persisted attendance timestamps.
+     */
+    private function storageTimezone(string $serialNumber): DateTimeZone
+    {
+        $timezone = config('zkteco-adms.storage_timezone', 'UTC');
+        $timezone = is_string($timezone) ? $timezone : 'UTC';
+
+        try {
+            return new DateTimeZone($timezone);
+        } catch (Exception) {
+            Log::warning('Invalid storage timezone, falling back to UTC', [
+                'timezone' => $timezone,
+                'device' => $serialNumber,
+            ]);
+
+            return new DateTimeZone('UTC');
+        }
     }
 
     /**

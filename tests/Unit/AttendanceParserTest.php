@@ -90,6 +90,12 @@ test('handles crlf line endings', function () {
     expect($records)->toHaveCount(2);
 });
 
+test('attendance parser ignores blank lines between records', function () {
+    $data = "1001\t2024-03-15 08:30:00\t0\t1\t\n   \n1002\t2024-03-15 08:31:00\t1\t1\t";
+
+    expect(attendanceParser()->parseAttendanceRecords($data, 'TEST001'))->toHaveCount(2);
+});
+
 test('minimal fields', function () {
     $data = "1001\t2024-03-15 08:30:00";
     $records = attendanceParser()->parseAttendanceRecords($data, 'TEST001');
@@ -146,6 +152,12 @@ test('parse user records', function () {
         ->and($records[0]->privilege)->toBe(0)
         ->and($records[0]->card)->toBe('12345')
         ->and($records[0]->password)->toBe('pass');
+});
+
+test('user parser ignores blank lines between records', function () {
+    $data = "PIN=1001\tName=Jane\n\nPIN=1002\tName=John";
+
+    expect(attendanceParser()->parseUserRecords($data, 'TEST001'))->toHaveCount(2);
 });
 
 test('skip user record without pin', function () {
@@ -252,4 +264,12 @@ test('parse command results skips invalid ids and supports empty previews', func
         ->and(AttendanceParser::trimTildePrefix('~FWVersion'))->toBe('FWVersion')
         ->and(AttendanceParser::bodyPreview(str_repeat('A', 300)))->toEndWith('...')
         ->and(AttendanceParser::bodyPreview('short'))->toBe('short');
+});
+
+test('command result parser ignores empty and unstructured segments', function () {
+    $body = '&&noise&ID=12&Return=0&CMD=INFO';
+    $records = attendanceParser()->parseCommandResults($body, 'TEST001');
+
+    expect($records)->toHaveCount(1)
+        ->and($records[0]->id)->toBe(12);
 });

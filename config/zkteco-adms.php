@@ -86,6 +86,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'default_timezone' => env('ZKTECO_DEFAULT_TIMEZONE', 'UTC'),
+    'storage_timezone' => env('ZKTECO_ADMS_STORAGE_TIMEZONE', 'UTC'),
 
     /*
     |--------------------------------------------------------------------------
